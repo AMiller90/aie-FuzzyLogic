@@ -17,7 +17,6 @@ BaseAgent::BaseAgent(glm::vec2 position, glm::vec4 colour, float radius)
 	this->radius = radius;
 }
 
-
 BaseResource::BaseResource(glm::vec2 position,glm::vec4 colour,float radius)
 {
 	this->position = position;
@@ -125,8 +124,6 @@ void Agent::draw()
 	drawBar(water,2);
 }
 
-
-
 float Agent::checkEatingDesirable()
 {
 	float desire = 0; //this is the return value which will be how much
@@ -144,9 +141,9 @@ float Agent::checkEatingDesirable()
 	float foodRangeMedium = fuzzyEngine.mediumRange->getMembership(foodRange);
 	float foodRangeFar = fuzzyEngine.farAway->getMembership(foodRange);
 	//is this a very desirable action?
-	float veryDesirableValue = Fuzzy::OR(Fuzzy::AND(foodRangeClose,hungry),veryHungry);
+	float veryDesirableValue = Fuzzy::OR(Fuzzy::AND(foodRangeClose, hungry), veryHungry);
 	//is it a desirable action?
-	float desirableValue = Fuzzy::AND(Fuzzy::NOT(foodRangeFar),hungry);
+	float desirableValue = Fuzzy::AND(Fuzzy::NOT(foodRangeFar), hungry);
 	//is in undesirable?  In this case if we are full it's undesirable
 	float undesirableValue = full;
 	//set up our maximum values ready to defuzzify
@@ -178,9 +175,9 @@ float Agent::checkSleepDesirable()
 	float caveMedium = fuzzyEngine.mediumRange->getMembership(caveRange);
 	float caveFar = fuzzyEngine.farAway->getMembership(caveRange);
 	//is this a very desirable action?
-	float veryDesirableValue = Fuzzy::OR(Fuzzy::AND(caveClose,awake),tired);
+	float veryDesirableValue = tired;
 	//is it a desirable action?
-	float desirableValue = Fuzzy::AND(Fuzzy::NOT(caveFar),tired);
+	float desirableValue = Fuzzy::AND(caveClose, awake);
 	//is in undesirable?  In this case if we are full it's undesirable
 	float undesirableValue = active;
 	//set up our maximum values readt to defuzzify
@@ -213,10 +210,10 @@ float Agent::checkDrinkingDesirable()
 	float waterRangeMedium = fuzzyEngine.mediumRange->getMembership(waterRange);
 	float waterRangeFar = fuzzyEngine.farAway->getMembership(waterRange);
 	//is this a very desirable action?
-	float veryDesirableValue = Fuzzy::OR(Fuzzy::AND(waterRangeClose,thirsty),veryThirsty);
+	float veryDesirableValue = Fuzzy::OR(Fuzzy::AND(waterRangeClose, veryThirsty),Fuzzy::AND(waterRangeMedium,veryThirsty));
 	veryDesirableValue= Fuzzy::OR(veryDesirableValue,weekFromThirst);
 	//is it a desirable action?
-	float desirableValue = Fuzzy::AND(Fuzzy::NOT(waterRangeClose),thirsty);
+	float desirableValue = Fuzzy::AND(Fuzzy::NOT(waterRangeFar),thirsty);
 	//is in undesirable?  In this case if we are full it's undesirable
 	float undesirableValue = notThirsty;
 	//set up our maximum values readt to defuzzify
@@ -254,10 +251,11 @@ void Agent::update(float delta)
 	float eatDesirability = checkEatingDesirable();
 	float sleepDesirability = checkSleepDesirable();
 	float drinkDesirability = checkDrinkingDesirable();
+
 	glm::vec2 velocity;
 	if(eatDesirability>sleepDesirability && eatDesirability>drinkDesirability)
 	{
-		velocity= gotoFood(eatDesirability,delta);
+		velocity = gotoFood(eatDesirability,delta);
 	}
 	else if(sleepDesirability>drinkDesirability)
 	{
@@ -267,9 +265,15 @@ void Agent::update(float delta)
 	{
 		velocity = gotoWater(drinkDesirability,delta);
 	}
+
+	if (findNearestResource(ENEMY) < 50)
+	{
+		velocity = glm::normalize(this->position);
+	}
+
 	position += velocity;
 	//if we are near water then drink
-	if(findNearestResource(WATER) <2)
+	if(findNearestResource(WATER) < 2)
 	{
 		water  = 1;
 	}
@@ -324,6 +328,159 @@ void Agent::update(float delta)
 	if(tiredness >1)
 	{
 		tiredness = 1;
+	}
+}
+
+Enemy::Enemy(glm::vec2 position) : BaseAgent(position, glm::vec4(1, 1, 0, 1), 20)
+{
+	follow = 0;
+	type = ENEMY;
+	maxSpeed = 150;
+}
+
+void Enemy::draw()
+{
+	BaseAgent::draw();
+}
+
+float Enemy::checkTargetDesireable()
+{
+	float desire = 0;
+	float playerRange = findNearestResource(SIMPLE_AI);
+
+	//are we listening
+	float listen = fuzzyEngine.listen->getMembership(follow);
+	//are we wanting to stalk
+	float stalk = fuzzyEngine.stalk->getMembership(follow);
+	//are we attacking
+	float attack = fuzzyEngine.attack->getMembership(follow);
+	//how close are we to player...
+	float playerRangeClose = fuzzyEngine.veryNear->getMembership(playerRange);
+	float playerRangeMedium = fuzzyEngine.mediumRange->getMembership(playerRange);
+	float playerRangeFar = fuzzyEngine.farAway->getMembership(playerRange);
+	//is this a very desirable action?
+	float veryDesirableValue = Fuzzy::OR(Fuzzy::AND(playerRangeClose, stalk), attack);
+	//is it a desirable action?
+	float desirableValue = Fuzzy::AND(Fuzzy::NOT(playerRangeFar), stalk);
+	//is in undesirable?  In this case if we are full it's undesirable
+	float undesirableValue = listen;
+	//set up our maximum values ready to defuzzify
+	float maxVeryDesirable = fuzzyEngine.veryDesirable->getMaxMembership();
+	float maxDesirable = fuzzyEngine.desirable->getMaxMembership();
+	float maxUndesirable = fuzzyEngine.undesirable->getMaxMembership();
+	//defuzzify
+	desire = maxVeryDesirable*veryDesirableValue + maxDesirable* desirableValue + maxUndesirable*undesirableValue;
+	desire /= (.1f + veryDesirableValue + desirableValue + undesirableValue);
+	//return our final desire
+	//cout << desire << endl;
+	return desire;
+}
+
+float Enemy::findNearestTarget(WorldObjectType type)
+{
+	float minDistance = 1000000;
+	for (auto object : *worldObjects)
+	{
+		if (object->type == type)
+		{
+			float distance = glm::length(object->position - position);
+			if (distance < minDistance)
+			{
+				minDistance = distance;
+			}
+		}
+	}
+	return minDistance;
+}
+
+glm::vec2 Enemy::findTargetVector(WorldObjectType type)
+{
+	float minDistance = 1000000;
+	glm::vec2 target;
+	for (auto object : *worldObjects)
+	{
+		if (object->type == type)
+		{
+			float distance = glm::length(object->position - position);
+			if (distance < minDistance)
+			{
+				minDistance = distance;
+				target = object->position;
+			}
+		}
+	}
+	glm::vec2 vector;
+	if (minDistance<1)
+	{
+		vector = glm::vec2(0, 0);
+	}
+	else
+	{
+		vector = (target - position) / minDistance;
+	}
+	return vector;
+}
+
+glm::vec2 Enemy::gotoAgentTarget(float desirability, float delta)
+{
+	glm::vec2 velocity = findTargetVector(SIMPLE_AI) * delta * (1 + desirability) * maxSpeed;
+	return velocity;
+}
+
+void Enemy::update(float delta)
+{
+	float targetDesirability = checkTargetDesireable();
+	cout << "targetdesireability: " << targetDesirability << ".";
+	glm::vec2 velocity;
+	float mag;
+
+	for (auto object : *worldObjects)
+	{
+		if (object->type == WorldObjectType::SIMPLE_AI)
+		{
+			glm::vec2 displacement = object->position - this->position;
+			mag = glm::length(displacement);
+		}
+	}
+
+	if(targetDesirability > 0.7)
+	{
+		this->maxSpeed = 100;
+		velocity = gotoAgentTarget(targetDesirability, delta);
+	}
+	else if(targetDesirability < 0.7)
+	{
+		this->maxSpeed = 150;
+		velocity = glm::vec2(0, 0);
+	}
+
+	position += velocity;
+
+	if (mag < 300 && mag > 51)
+	{
+		follow += delta * .3f;
+	}
+	else
+	{
+		follow -= delta * .3f;
+	}
+
+	/*if (findNearestResource(SIMPLE_AI) > 100)
+	{
+		follow -= delta * .3f;
+	}
+	else
+	{
+		follow += delta *.3f;
+	}*/
+
+	if (follow < 0)
+	{
+		follow = 0;
+	}
+	if (follow > 1)
+	{
+		follow = 1;
 	}
 }
 
