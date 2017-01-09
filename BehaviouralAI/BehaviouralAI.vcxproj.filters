@@ -57,6 +57,9 @@
     <ClCompile Include="src\World.cpp">
       <Filter>Source Files\Utility Systems Demo</Filter>
     </ClCompile>
+    <ClCompile Include="src\UtilityNPC.cpp">
+      <Filter>Source Files\Utility Systems Demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\BaseApplication.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files\Utility Systems Demo</Filter>
     </ClInclude>
     <ClInclude Include="src\BaseNPC.h">
+      <Filter>Header Files\Utility Systems Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UtilityNPC.h">
       <Filter>Header Files\Utility Systems Demo</Filter>
     </ClInclude>
   </ItemGroup>

@@ -8,9 +8,8 @@ class World;
 class BaseNPC
 {
 public:
-	//Don't want any base constructor
+	////Don't want any base constructor
 	BaseNPC() = delete;
-
 	BaseNPC(World* a_pWorld);
 	~BaseNPC();
 
