@@ -12,11 +12,16 @@ public:
 	void render();
 
 	void addLogToHouse();
+	void addLogToHouse2();
 	unsigned int getHouseLogsRequired() const { return m_uiHouseLogsRequired;  }
 	unsigned int getCurrentHouseLogs() const { return m_uiHouseCurrentLogs; }
+	unsigned int getCurrentHouse2Logs() const { return m_uiHouse2CurrentLogs; }
 	bool isHouseBuilt() { return m_uiHouseCurrentLogs == m_uiHouseLogsRequired;  }
+	bool isHouse2Built() { return m_uiHouse2CurrentLogs == m_uiHouseLogsRequired; }
+	bool checkAllHousesBuilt() { return isHouseBuilt() && isHouse2Built(); }
 
 	glm::vec3 getHouseLocation() const;
+	glm::vec3 getHouseLocation2() const;
 	glm::vec3 getTreeLocation() const;
 	glm::vec3 getWaterLocation() const;
 	glm::vec3 getFoodLocation() const;
@@ -31,8 +36,10 @@ public:
 private:
 	unsigned int m_uiHouseLogsRequired;
 	unsigned int m_uiHouseCurrentLogs;
+	unsigned int m_uiHouse2CurrentLogs;
 
 	glm::vec3 m_houseLocation;
+	glm::vec3 m_houseLocation2;
 	glm::vec3 m_treeLocation;
 
 
@@ -40,6 +47,7 @@ private:
 	glm::vec3 m_foodLocation;
 	glm::vec3 m_restedLocation;
 
+	bool m_bAllHousesBuilt;
 	float m_fHouseInteractTime;
 	float m_fTreeInteractTime;
 	float m_fFoodInteractTime;

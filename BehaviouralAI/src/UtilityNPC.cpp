@@ -24,24 +24,6 @@ void UtilityNPC::selectAction(float a_fdeltaTime)
 		}
 	}
 
-	/*switch (strBestAction)
-	{
-	case Resource::Food:
-		
-		break;
-	case Resource::Water:
-		
-		break;
-	case Resource::Rest:
-		
-		break;
-	case Resource::Logs:
-		
-		break;
-	default:
-		break;
-	}*/
-
 	if (strBestAction == Resource::Food)
 	{
 		collectFood(a_fdeltaTime);
@@ -62,21 +44,4 @@ void UtilityNPC::selectAction(float a_fdeltaTime)
 	{
 		buildHouse(a_fdeltaTime);
 	}
-	//if (strBestAction == "collectWater")
-	//{
-	//	collectWater(a_fdeltaTime);
-	//}
-	//if (strBestAction == "collectFood")
-	//{
-	//	collectFood(a_fdeltaTime);
-	//}
-	//if (strBestAction == "collectRest")
-	//{
-	//	rest(a_fdeltaTime);
-	//}
-	//if (strBestAction == "collectLog")
-	//{
-	//	rest(a_fdeltaTime);
-	//}
-
 }

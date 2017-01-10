@@ -7,6 +7,7 @@
 
 #include "gl_core_4_4.h"
 #include <GLFW\glfw3.h>
+#include <time.h> 
 
 BaseNPC::BaseNPC(World* a_pWorld)
 {
@@ -109,19 +110,47 @@ void BaseNPC::chopTree(float a_fdeltaTime)
 
 void BaseNPC::buildHouse(float a_fdeltaTime)
 {
-	if (travelTo(m_pWorld->getHouseLocation(), a_fdeltaTime))
+	if (!m_pWorld->checkAllHousesBuilt())
 	{
-		if (m_uiNumberOfLogs <= 0)
+		float distToPosition1 = glm::length(m_pWorld->getHouseLocation() - m_vPosition);
+		float distToPosition2 = glm::length(m_pWorld->getHouseLocation2() - m_vPosition);
+
+		if (distToPosition1 < distToPosition2 && !m_pWorld->isHouseBuilt())
 		{
-			std::cout << "Don't have any logs to build with :(" << std::endl;
-		}
-		else
-		{
-			if (m_pWorld->interactWithHouse())
+			if (travelTo(m_pWorld->getHouseLocation(), a_fdeltaTime))
 			{
-				m_uiNumberOfLogs--;
-				std::cout << "Built House!" << std::endl;
-				m_pWorld->addLogToHouse();
+				if (m_uiNumberOfLogs <= 0)
+				{
+					std::cout << "Don't have any logs to build with :(" << std::endl;
+				}
+				else
+				{
+					if (m_pWorld->interactWithHouse())
+					{
+						m_uiNumberOfLogs--;
+						std::cout << "Built House!" << std::endl;
+						m_pWorld->addLogToHouse();
+					}
+				}
+			}
+		}
+		else if (distToPosition1 > distToPosition2 && !m_pWorld->isHouse2Built())
+		{
+			if (travelTo(m_pWorld->getHouseLocation2(), a_fdeltaTime))
+			{
+				if (m_uiNumberOfLogs <= 0)
+				{
+					std::cout << "Don't have any logs to build with :(" << std::endl;
+				}
+				else
+				{
+					if (m_pWorld->interactWithHouse())
+					{
+						m_uiNumberOfLogs--;
+						std::cout << "Built House!" << std::endl;
+						m_pWorld->addLogToHouse2();
+					}
+				}
 			}
 		}
 	}

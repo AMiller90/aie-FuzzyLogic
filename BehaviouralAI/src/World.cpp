@@ -9,14 +9,18 @@
 World::World()
 {
 	m_houseLocation = glm::vec3(10, 0, -10);
+	m_houseLocation2 = glm::vec3(-10, 0, 5);
+
 	m_treeLocation = glm::vec3(-10, 0, -10);
 
 	m_foodLocation = glm::vec3(10, 0, 10);
 	m_waterLocation = glm::vec3(0, 0, 10);
 	m_restedLocation = glm::vec3(-10, 0, 10);
 
+	m_bAllHousesBuilt = false;
 	m_uiHouseCurrentLogs = 4;
 	m_uiHouseLogsRequired = 10;
+	m_uiHouse2CurrentLogs = 4;
 
 	m_fRestedInteractTime = 1.0f;
 	m_fWaterInteractTime = 2.0f;
@@ -44,11 +48,16 @@ void World::render()
 	Gizmos::addSphere(m_waterLocation, 1, 8, 8, glm::vec4(0, 0, 1, 1));
 	Gizmos::addSphere(m_restedLocation, 1, 8, 8, glm::vec4(0, 1, 1, 1));
 
+	float m_fHouse1Height = 3 * ((float)m_uiHouseCurrentLogs / m_uiHouseLogsRequired);
+	float m_fHouse2Height = 3 * ((float)m_uiHouse2CurrentLogs / m_uiHouseLogsRequired);
 
-	float m_fHouseHeight = 3 * ((float)m_uiHouseCurrentLogs / m_uiHouseLogsRequired);
-	glm::vec4 houseColor = (m_uiHouseCurrentLogs >= m_uiHouseLogsRequired) ? glm::vec4(0, 1, 0, 1) : glm::vec4(1, 1, 0, 1);
+	glm::vec4 house1Color = (m_uiHouseCurrentLogs >= m_uiHouseLogsRequired) ? glm::vec4(0, 1, 0, 1) : glm::vec4(1, 1, 0, 1);
+	glm::vec4 house2Color = (m_uiHouse2CurrentLogs >= m_uiHouseLogsRequired) ? glm::vec4(0, 1, 0, 1) : glm::vec4(1, 1, 0, 1);
 
-	Gizmos::addAABBFilled(m_houseLocation + glm::vec3(0, m_fHouseHeight, 0), glm::vec3(3, m_fHouseHeight, 2), houseColor);
+	//House 1
+	Gizmos::addAABBFilled(m_houseLocation + glm::vec3(0, m_fHouse1Height, 0), glm::vec3(3, m_fHouse1Height, 2), house1Color);
+	//House2
+	Gizmos::addAABBFilled(m_houseLocation2 + glm::vec3(0, m_fHouse2Height, 0), glm::vec3(3, m_fHouse2Height, 2), house2Color);
 
 	Gizmos::addCylinderFilled(m_treeLocation, 1, 2, 8, glm::vec4(0, 1, 0, 1));
 }
@@ -57,6 +66,12 @@ void World::addLogToHouse()
 {
 	if (m_uiHouseCurrentLogs < m_uiHouseLogsRequired)
 		m_uiHouseCurrentLogs++;
+}
+
+void World::addLogToHouse2()
+{
+	if (m_uiHouse2CurrentLogs < m_uiHouseLogsRequired)
+		m_uiHouse2CurrentLogs++;
 }
 
 bool World::interactWithFood()
@@ -139,4 +154,9 @@ glm::vec3 World::getTreeLocation() const
 glm::vec3 World::getHouseLocation() const
 {
 	return m_houseLocation;
+}
+
+glm::vec3 World::getHouseLocation2() const
+{
+	return m_houseLocation2;
 }
